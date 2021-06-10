@@ -19,10 +19,20 @@ df_cv = (df.iloc[size_training:(size_training + size_validation),:]).reset_index
 df_test = (df.iloc[(size_training + size_validation):,:]).reset_index(drop=True)
 #print(df_train.columns)
 
-w = np.ones(df_train.shape[1])
+w = np.zeros(df_train.shape[1])
 matrix_train = np.ones((df_train.shape[0], df_train.shape[1]))
 matrix_train[:,1:] = df_train.iloc[:,:-1]
+alpha = 0.001
+eta = alpha
 
 temp = np.apply_along_axis(lambda x : np.matmul(x,w), 1, matrix_train)
+temp = 1 / (1 + np.exp(temp*(-1)))
+temp = df_train.iloc[:,-1:].to_numpy().flatten() - temp
+temp = np.apply_along_axis(lambda x : np.multiply(x, temp), 0, matrix_train)
 
+partial = np.apply_along_axis(lambda x : np.sum(x), 0, temp)
+partial_sqrt = np.linalg.norm(partial)
+
+w = w + (eta * partial)
+#print(w)
 
