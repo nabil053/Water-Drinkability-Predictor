@@ -17,5 +17,12 @@ size_testing = df.shape[0] - (size_training + size_validation)
 df_train = (df.iloc[0:size_training,:]).reset_index(drop=True)
 df_cv = (df.iloc[size_training:(size_training + size_validation),:]).reset_index(drop=True)
 df_test = (df.iloc[(size_training + size_validation):,:]).reset_index(drop=True)
-print(df_train)
+#print(df_train.columns)
+
+w = np.ones(df_train.shape[1])
+matrix_train = np.ones((df_train.shape[0], df_train.shape[1]))
+matrix_train[:,1:] = df_train.iloc[:,:-1]
+
+temp = np.apply_along_axis(lambda x : np.matmul(x,w), 1, matrix_train)
+
 
