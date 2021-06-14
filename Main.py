@@ -1,6 +1,5 @@
 import math
 import sys
-
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -10,19 +9,23 @@ np.set_printoptions(suppress=True)
 #Reading data from dataset and dropping data points with at least one null value
 df = pd.read_csv('water_potability.csv')
 df = df.dropna().reset_index(drop=True)
-#print(df)
+
+#Modifying the dataframe to make the number of data of both classes the same, since class 0 has overwhelmingly more data
+df_ones = df.loc[df['Potability'] == 1]
+df_zeros = df.loc[df['Potability'] == 0]
+df_zeros = df.iloc[0:df_ones.shape[0],:]
+df_ones = pd.concat([df_ones, df_zeros])
+df = df_ones.reset_index(drop=True)
 
 #Determining the sizes of training, validation and test sets
 size_training = (3 * df.shape[0])//5
 size_validation = df.shape[0]//5
 size_testing = df.shape[0] - (size_training + size_validation)
-#print(size_training, size_validation, size_testing)
 
 #Splitting the dataframe into training, validation and test sets
 df_train = (df.iloc[0:size_training,:]).reset_index(drop=True)
 df_cv = (df.iloc[size_training:(size_training + size_validation),:]).reset_index(drop=True)
 df_test = (df.iloc[(size_training + size_validation):,:]).reset_index(drop=True)
-#print(df_train.columns)
 
 #Copying features of training, cross validation and testing data to respective matrices with zero feature included
 matrix_train = np.ones((df_train.shape[0], df_train.shape[1]))
@@ -31,8 +34,6 @@ matrix_cv = np.ones((df_cv.shape[0], df_cv.shape[1]))
 matrix_cv[:,1:] = df_cv.iloc[:,:-1]
 matrix_test = np.ones((df_test.shape[0], df_test.shape[1]))
 matrix_test[:,1:] = df_test.iloc[:,:-1]
-# matrix_cv = np.ones((df_cv.shape[0], df_cv.shape[1]))
-# matrix_cv[:,1:] = df_cv.iloc[:,:-1]
 
 #Normalizing the data in the matrices
 for i in range(1,matrix_train.shape[1]):
@@ -47,13 +48,11 @@ for i in range(1,matrix_test.shape[1]):
     mean = np.mean(matrix_test[:,i])
     std = np.std(matrix_test[:,i])
     matrix_test[:,i] = (matrix_test[:,i] - mean)/std
-#print(matrix_train)
 
 #Initializing parameter vector to 0 as well as starting step size and stopping criteria
 alpha = 0.01
 stop_criteria = 0.001
 w = np.zeros(df_train.shape[1])
-#print(matrix_train)
 
 #Selecting some possible tuning parameter values and the variables needed to find the best one
 param_vals = [0, 0.0001, 0.001, 0.01, 0.1, 1, 10, 100, 1000, 10000]
@@ -78,6 +77,10 @@ for p in param_vals:
                 temp[j] = 0
             else:
                 temp[j] = 1 / (1 + math.exp(temp[j] * (-1)))
+                if temp[j] > 0.5:
+                    temp[j] = 1
+                else:
+                    temp[j] = 0
         temp = df_train.iloc[:, -1:].to_numpy().flatten() - temp
         temp = np.apply_along_axis(lambda x: np.multiply(x, temp), 0, matrix_train)
 
@@ -107,6 +110,10 @@ for p in param_vals:
             temp[k] = 0
         else:
             temp[k] = 1 / (1 + math.exp(temp[k] * (-1)))
+            if temp[k] > 0.5:
+                temp[k] = 1
+            else:
+                temp[k] = 0
     temp = df_cv.iloc[:, -1:].to_numpy().flatten() - temp
     error = (np.absolute(temp)).sum()
 
@@ -116,10 +123,30 @@ for p in param_vals:
         tuning_param = p
         w = np.copy(w_temp)
 
+#Evaluating the model's performance on test data
+temp = np.apply_along_axis(lambda x: np.matmul(x, w), 1, matrix_test)
+for k in range(len(temp)):
+    if temp[k] > 10:
+        temp[k] = 1
+    elif temp[k] < -10:
+        temp[k] = 0
+    else:
+        temp[k] = 1 / (1 + math.exp(temp[k] * (-1)))
+        if temp[k] > 0.5:
+            temp[k] = 1
+        else:
+            temp[k] = 0
+temp = (2 * (df_test.iloc[:, -1:].to_numpy().flatten())) + temp
 
-#print(math.exp(np.matmul(d,w)))
-# print(true_zero)
-# print(false_zero)
-# print(true_one)
-# print(false_one)
-# print(((true_zero + true_one)/df_cv.shape[0])*100)
+#Determining the values of the variables for confusion matrix
+true_negative = temp.tolist().count(0)
+false_positive = temp.tolist().count(1)
+false_negative = temp.tolist().count(2)
+true_positive = temp.tolist().count(3)
+
+#Displaying the metrics of the model
+print("Model successfully trained...")
+print("Accuracy: {:.2f}%".format(((true_positive + true_negative) / df_test.shape[0]) * 100))
+print("Precision: {:.2f}%".format((true_positive / (true_positive + false_positive)) * 100))
+print("Recall: {:.2f}%".format((true_positive / (true_positive + false_negative)) * 100))
+
