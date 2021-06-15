@@ -1,12 +1,10 @@
 import math
-import sys
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 
 np.set_printoptions(suppress=True)
 
-#Reading data from dataset and dropping data points with at least one null value
+#Reading data from dataset and dropping data points with at least one null value, because null data with impact the result
 df = pd.read_csv('water_potability.csv')
 df = df.dropna().reset_index(drop=True)
 
@@ -54,9 +52,8 @@ alpha = 0.01
 stop_criteria = 0.001
 w = np.zeros(df_train.shape[1])
 
-#Selecting some possible tuning parameter values and the variables needed to find the best one
+#Selecting some possible tuning parameter values and the variables needed to find the model with the best one
 param_vals = [0, 0.0001, 0.001, 0.01, 0.1, 1, 10, 100, 1000, 10000]
-tuning_param = 0
 min_error = df_cv.shape[0]
 error = 0
 
@@ -120,7 +117,6 @@ for p in param_vals:
     #Updating the tuning parameter and model parameters if error is less than in previous iteration
     if error < min_error:
         min_error = error
-        tuning_param = p
         w = np.copy(w_temp)
 
 #Evaluating the model's performance on test data
