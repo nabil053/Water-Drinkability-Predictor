@@ -47,10 +47,11 @@ for i in range(1,matrix_test.shape[1]):
     std = np.std(matrix_test[:,i])
     matrix_test[:,i] = (matrix_test[:,i] - mean)/std
 
-#Initializing parameter vector to 0 as well as starting step size and stopping criteria
+#Initializing parameter vector to 0 as well as starting step size and stopping criteria, and setting the threshold
 alpha = 0.01
 stop_criteria = 0.001
 w = np.zeros(df_train.shape[1])
+THRESHOLD = 0.5
 
 #Selecting some possible tuning parameter values and the variables needed to find the model with the best one
 param_vals = [0, 0.0001, 0.001, 0.01, 0.1, 1, 10, 100, 1000, 10000]
@@ -74,7 +75,7 @@ for p in param_vals:
                 temp[j] = 0
             else:
                 temp[j] = 1 / (1 + math.exp(temp[j] * (-1)))
-                if temp[j] > 0.5:
+                if temp[j] > THRESHOLD:
                     temp[j] = 1
                 else:
                     temp[j] = 0
@@ -107,7 +108,7 @@ for p in param_vals:
             temp[k] = 0
         else:
             temp[k] = 1 / (1 + math.exp(temp[k] * (-1)))
-            if temp[k] > 0.5:
+            if temp[k] > THRESHOLD:
                 temp[k] = 1
             else:
                 temp[k] = 0
@@ -128,7 +129,7 @@ for k in range(len(temp)):
         temp[k] = 0
     else:
         temp[k] = 1 / (1 + math.exp(temp[k] * (-1)))
-        if temp[k] > 0.5:
+        if temp[k] > THRESHOLD:
             temp[k] = 1
         else:
             temp[k] = 0
