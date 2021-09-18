@@ -6,8 +6,9 @@ The dataset used here is called water_potability.csv and it includes description
 a total of 9 attributes (class excluded), which are pH values, hardness, solids, chloramines, sulfates, conductivity, organic carbon, trihalomethanes
 and turbidity.
 
-The dataset used here contains a total of 8124 sample data, which has been split into training data (5686, 70%) for training the model and testing data (2438, 30%) for testing the model's metrics.
+The dataset used here contains a total of 3276 sample data. The dataset is further modified at runtime by purging it of data containing null values.
+Since class 0 has overwhelmingly more sample data (1200) than class 1 (811) after purging, hence the excess class 0 data (389) are removed, bringing 
+the total to 1622. This final dataset is further split into training data (973, 60%) for training the model, validation data (324, 20%) for cross 
+validation and testing data (325, 20%) for testing the model's metrics.
 
-The file 'Decision Tree.jpg' included in this repository shows the structure of the decision tree.
-
-The generated model has the ability to predict a sample mushroom's edibility with an accuracy of 99.95%, and its precision and recall are 100% and 99.92% respectively.
+The generated model has the ability to predict water's drinkability with an accuracy of 36.00%, and its precision and recall are 34.42% and 94.64% respectively.
